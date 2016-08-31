@@ -99,6 +99,7 @@ func (bc *BackendConn) loopWriter() error {
 		for ok {
 			var flush = len(bc.input) == 0
 			if bc.canForward(r) {
+				//
 				if err := p.Encode(r.Resp, flush); err != nil {
 					return bc.setResponse(r, nil, err)
 				}
@@ -116,6 +117,7 @@ func (bc *BackendConn) loopWriter() error {
 	return nil
 }
 
+// 创建一个到Backend的连接
 func (bc *BackendConn) newBackendReader() (*redis.Conn, chan <- *Request, error) {
 	c, err := redis.DialTimeout(bc.addr, 1024 * 512, time.Second)
 	if err != nil {
@@ -128,6 +130,7 @@ func (bc *BackendConn) newBackendReader() (*redis.Conn, chan <- *Request, error)
 	go func() {
 		defer c.Close()
 		for r := range tasks {
+			// 读取处理完毕的tasks
 			resp, err := c.Reader.Decode()
 			bc.setResponse(r, resp, err)
 			if err != nil {
@@ -138,36 +141,6 @@ func (bc *BackendConn) newBackendReader() (*redis.Conn, chan <- *Request, error)
 	}()
 	return c, tasks, nil
 }
-
-//func (bc *BackendConn) verifyAuth(c *redis.Conn) error {
-//	if bc.auth == "" {
-//		return nil
-//	}
-//	resp := redis.NewArray([]*redis.Resp{
-//		redis.NewBulkBytes([]byte("AUTH")),
-//		redis.NewBulkBytes([]byte(bc.auth)),
-//	})
-//
-//	if err := c.Writer.Encode(resp, true); err != nil {
-//		return err
-//	}
-//
-//	resp, err := c.Reader.Decode()
-//	if err != nil {
-//		return err
-//	}
-//	if resp == nil {
-//		return errors.New(fmt.Sprintf("error resp: nil response"))
-//	}
-//	if resp.IsError() {
-//		return errors.New(fmt.Sprintf("error resp: %s", resp.Value))
-//	}
-//	if resp.IsString() {
-//		return nil
-//	} else {
-//		return errors.New(fmt.Sprintf("error resp: should be string, but got %s", resp.Type))
-//	}
-//}
 
 func (bc *BackendConn) canForward(r *Request) bool {
 	if r.Failed != nil && r.Failed.Get() {
@@ -191,39 +164,6 @@ func (bc *BackendConn) setResponse(r *Request, resp *redis.Resp, err error) erro
 	return err
 }
 
-type SharedBackendConn struct {
-	*BackendConn
-	mu     sync.Mutex
-
-	refcnt int
-}
-
-func NewSharedBackendConn(addr string) *SharedBackendConn {
-	return &SharedBackendConn{BackendConn: NewBackendConn(addr), refcnt: 1}
-}
-
-func (s *SharedBackendConn) Close() bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.refcnt <= 0 {
-		log.Panicf("shared backend conn has been closed, close too many times")
-	}
-	if s.refcnt == 1 {
-		s.BackendConn.Close()
-	}
-	s.refcnt--
-	return s.refcnt == 0
-}
-
-func (s *SharedBackendConn) IncrRefcnt() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.refcnt == 0 {
-		log.Panicf("shared backend conn has been closed")
-	}
-	s.refcnt++
-}
-
 type FlushPolicy struct {
 	*redis.Encoder
 
@@ -235,15 +175,7 @@ type FlushPolicy struct {
 }
 
 func (p *FlushPolicy) needFlush() bool {
-	if p.nbuffered != 0 {
-		if p.nbuffered > p.MaxBuffered {
-			return true
-		}
-		if microseconds() - p.lastflush > p.MaxInterval {
-			return true
-		}
-	}
-	return false
+	return p.nbuffered != 0
 }
 
 func (p *FlushPolicy) Flush(force bool) error {

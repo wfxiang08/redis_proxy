@@ -63,9 +63,11 @@ func NewSessionSize(c net.Conn, redisConfig *RedisConfig, bufsize int, timeout i
 	s.Conn.WriterTimeout = time.Second * 30
 	log.Infof("session [%p] create: %s", s, s)
 
+	// 创建到各个backend Write的连接
 	for i := 0; i < len(redisConfig.Master); i++ {
 		s.backendWs = append(s.backendWs, NewBackendConn(redisConfig.Master[i]))
 	}
+	// 创建到Slave的连接
 	if len(redisConfig.Slaves) == 1 {
 		s.backendR = NewBackendConn(redisConfig.Slaves[0])
 	}
@@ -168,6 +170,16 @@ func (s *Session) handleResponse(r *Request) (*redis.Resp, error) {
 	return resp, nil
 }
 
+func CloneRequest(request*Request) *Request {
+	return &Request{
+		OpStr:  request.OpStr,
+		Start:  request.Start,
+		Resp:   request.Resp,
+		Wait:   nil,
+		Failed: nil,
+	}
+}
+
 // 如何处理Redis请求呢?
 func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 	opstr, err := getOpStr(resp)
@@ -214,16 +226,25 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 	// 分配请求:
 	// 做请求分发
 	switch opstr {
+	case "AUTH":
+		fallthrough
 	case "PING":
 		fallthrough
 	case "SELECT":
 		// 同时SELECT所有的服务器
 		// 同时ping所有的服务器
+		var r1*Request
 		for i := 0; i < len(s.backendWs); i++ {
-			s.backendWs[i].PushBack(r)
+			if i != 0 {
+				r1 = CloneRequest(r)
+			} else {
+				r1 = r
+			}
+			s.backendWs[i].PushBack(r1)
 		}
 		if s.backendR != nil {
-			s.backendR.PushBack(r)
+			r1 = CloneRequest(r)
+			s.backendR.PushBack(r1)
 		}
 	default:
 		if IsReadOnlyCommand(opstr) {
@@ -235,9 +256,15 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 				s.backendWs[0].PushBack(r)
 			}
 		} else {
+			var r1*Request
 			// 多次写入数据
 			for i := 0; i < len(s.backendWs); i++ {
-				s.backendWs[i].PushBack(r)
+				if i != 0 {
+					r1 = CloneRequest(r)
+				} else {
+					r1 = r
+				}
+				s.backendWs[i].PushBack(r1)
 			}
 		}
 
