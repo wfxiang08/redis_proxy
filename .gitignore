@@ -5,6 +5,7 @@
 *.dump
 *.log.*
 
+redis.config
 main
 proxy
 martini_log
