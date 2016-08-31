@@ -13,27 +13,33 @@ import (
 )
 
 type Server struct {
-	listener net.Listener
+	redisConfig *RedisConfig
+	listener    net.Listener
 
-	kill     chan interface{}
-	wait     sync.WaitGroup
-	stop     sync.Once
+	kill        chan interface{}
+	wait        sync.WaitGroup
+	stop        sync.Once
 }
 
-func New(addr string, passwd, debugVarAddr string) *Server {
+func New(redisConfig *RedisConfig) *Server {
 
-	s := &Server{}
+	s := &Server{redisConfig:redisConfig}
 	s.kill = make(chan interface{})
 
-	if l, err := net.Listen("tcp", addr); err != nil {
+	// 监听某个端口
+	if l, err := net.Listen("tcp", redisConfig.Listen); err != nil {
 		log.PanicErrorf(err, "open listener failed")
 	} else {
 		s.listener = l
 	}
 
+	// 添加一个Wait
 	s.wait.Add(1)
+
 	// 异步执行
 	go func() {
+		// server结束: wait释放
+		// 很难做到: gracefully stop, 要关闭了就直接关闭吧
 		defer s.wait.Done()
 		s.serve()
 	}()
@@ -55,14 +61,13 @@ func (s *Server) handleConns() {
 	ch := make(chan net.Conn, 4096)
 	defer close(ch)
 
-	passwd := ""
-	addr := "127.0.0.1:6379"
 
 	maxPipeline := 10
+
 	// 为每个请求建一个Session
 	go func() {
 		for c := range ch {
-			x := router.NewSessionSize(c, passwd, addr, 1024 * 1024, 5000)
+			x := router.NewSessionSize(c, s.redisConfig, 1024 * 1024, 5000)
 
 			// Session处理Redis的请求
 			go x.Serve(maxPipeline)
@@ -87,16 +92,21 @@ func (s *Server) handleConns() {
 }
 
 func (s *Server) Join() {
+	// 等待: wait释放
 	s.wait.Wait()
 }
 
 func (s *Server) Close() error {
+	// close 之后，等待: socket的结束
 	s.close()
+
+	// 等待Wait释放
 	s.wait.Wait()
 	return nil
 }
 
 func (s *Server) close() {
+	// 一次性的动作
 	s.stop.Do(func() {
 		s.listener.Close()
 		close(s.kill)

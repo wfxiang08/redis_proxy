@@ -13,25 +13,29 @@ import (
 	"github.com/CodisLabs/codis/pkg/utils/atomic2"
 	"github.com/CodisLabs/codis/pkg/utils/errors"
 	"github.com/CodisLabs/codis/pkg/utils/log"
+	"github.com/CodisLabs/codis/pkg/proxy"
 )
 
 type Session struct {
 	*redis.Conn
 
-	Ops        int64
+	Ops         int64
 
-	LastOpUnix int64
-	CreateUnix int64
+	LastOpUnix  int64
+	CreateUnix  int64
 
-	auth       string
-	authorized bool
+	auth        string
+	authorized  bool
 
-	quit       bool
-	failed     atomic2.Bool
+	quit        bool
+	failed      atomic2.Bool
 
-	backendW   *BackendConn // 读写Redis, 如果存在: backendR, 则只读
-	backendWB  *BackendConn // 写备份
-	backendR   *BackendConn
+	redisConfig *proxy.RedisConfig
+
+	// 如果存在多个Master, 则第一个为主要的Master, 其他的为异步双写接口
+	backendWs   []*BackendConn
+	// 如果指定了Slave, 则从slave读取数据
+	backendR    *BackendConn
 }
 
 func (s *Session) String() string {
@@ -48,21 +52,25 @@ func (s *Session) String() string {
 	return string(b)
 }
 
-func NewSession(c net.Conn, auth string, addr string, ) *Session {
-	return NewSessionSize(c, auth, addr, 1024 * 32, 1800)
+func NewSession(c net.Conn, redisConfig*proxy.RedisConfig) *Session {
+	return NewSessionSize(c, redisConfig, 1024 * 32, 1800)
 }
 
-func NewSessionSize(c net.Conn, auth string, addr string, bufsize int, timeout int) *Session {
-	s := &Session{CreateUnix: time.Now().Unix(), auth: auth}
+func NewSessionSize(c net.Conn, redisConfig*proxy.RedisConfig, bufsize int, timeout int) *Session {
+	s := &Session{CreateUnix: time.Now().Unix(), redisConfig: redisConfig}
+
 	s.Conn = redis.NewConnSize(c, bufsize)
 	s.Conn.ReaderTimeout = time.Second * time.Duration(timeout)
 	s.Conn.WriterTimeout = time.Second * 30
 	log.Infof("session [%p] create: %s", s, s)
 
-	s.backendW = NewBackendConn("127.0.0.1:6479", "")
-	// s.backendWB = NewBackendConn("127.0.0.1:6379", "")
-	s.backendR = NewBackendConn("127.0.0.1:6439", "")
-	// s.backend = NewBackendConn(addr, auth)
+	for i := 0; i < redisConfig.Master; i++ {
+		s.backendWs = append(s.backendWs, NewBackendConn(redisConfig.Master[i].Host, redisConfig.Master[i].Port))
+	}
+	if len(redisConfig.Slaves) == 1 {
+		s.backendR = NewBackendConn(redisConfig.Slaves[0].Host, redisConfig.Slaves[0].Port)
+	}
+
 	return s
 }
 
@@ -180,23 +188,10 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 		Failed: &s.failed,
 	}
 
-	// TODO: 将请求转发给后端服务器
-
-
 	if opstr == "QUIT" {
 		return s.handleQuit(r)
 	}
-	//if opstr == "AUTH" {
-	//	return s.handleAuth(r)
-	//}
 
-	if !s.authorized {
-		if s.auth != "" {
-			r.Response.Resp = redis.NewError([]byte("NOAUTH Authentication required."))
-			return r, nil
-		}
-		s.authorized = true
-	}
 
 	//switch opstr {
 	//case "SELECT":
@@ -218,7 +213,36 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 
 
 	// 分配请求:
-	s.backendW.PushBack(r)
+	// 做请求分发
+	switch opstr {
+	case "PING":
+		fallthrough
+	case "SELECT":
+		// 同时SELECT所有的服务器
+		// 同时ping所有的服务器
+		for i := 0; i < len(s.backendWs); i++ {
+			s.backendWs[i].PushBack(r)
+		}
+		if s.backendR != nil {
+			s.backendR.PushBack(r)
+		}
+	default:
+		if IsReadOnlyCommand(opstr) {
+			if s.backendR != nil {
+				// 通过只读的backendR来读取数据
+				s.backendR.PushBack(r)
+			} else {
+				// 同构Ws[0]来读取数据
+				s.backendWs[0].PushBack(r)
+			}
+		} else {
+			// 多次写入数据
+			for i := 0; i < len(s.backendWs); i++ {
+				s.backendWs[i].PushBack(r)
+			}
+		}
+
+	}
 
 	return r, nil
 }

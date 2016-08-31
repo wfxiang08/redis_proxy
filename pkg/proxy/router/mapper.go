@@ -23,24 +23,23 @@ func init() {
 }
 
 var (
-	blacklist = make(map[string]bool)
+	readOnlyCommands = make(map[string]bool)
 )
 
 func init() {
 	for _, s := range []string{
-		"KEYS", "MOVE", "OBJECT", "RENAME", "RENAMENX", "SCAN", "BITOP", "MSETNX", "MIGRATE", "RESTORE",
-		"BLPOP", "BRPOP", "BRPOPLPUSH", "PSUBSCRIBE", "PUBLISH", "PUNSUBSCRIBE", "SUBSCRIBE", "RANDOMKEY",
-		"UNSUBSCRIBE", "DISCARD", "EXEC", "MULTI", "UNWATCH", "WATCH", "SCRIPT",
-		"BGREWRITEAOF", "BGSAVE", "CLIENT", "CONFIG", "DBSIZE", "DEBUG", "FLUSHALL", "FLUSHDB",
-		"LASTSAVE", "MONITOR", "SAVE", "SHUTDOWN", "SLAVEOF", "SLOWLOG", "SYNC", "TIME",
-		"SLOTSINFO", "SLOTSDEL", "SLOTSMGRTSLOT", "SLOTSMGRTONE", "SLOTSMGRTTAGSLOT", "SLOTSMGRTTAGONE", "SLOTSCHECK",
+		"info", "smembers", "hlen", "hmget", "srandmember", "hvals", "randomkey", "strlen",
+		"dbsize", "keys", "ttl", "lindex", "type", "llen", "dump", "scard", "echo", "lrange",
+		"zcount", "exists", "sdiff", "zrange", "mget", "zrank", "get", "getbit", "getrange",
+		"zrevrange", "zrevrangebyscore", "hexists", "object", "sinter", "zrevrank", "hget",
+		"zscore", "hgetall", "sismember",
 	} {
-		blacklist[s] = true
+		readOnlyCommands[s] = true
 	}
 }
 
-func isNotAllowed(opstr string) bool {
-	return blacklist[opstr]
+func IsReadOnlyCommand(opstr string) bool {
+	return readOnlyCommands[opstr]
 }
 
 var (

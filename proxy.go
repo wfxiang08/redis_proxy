@@ -4,7 +4,6 @@
 package main
 
 import (
-
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -16,12 +15,13 @@ import (
 	"strings"
 	"syscall"
 
-
 	"github.com/docopt/docopt-go"
 	"github.com/CodisLabs/codis/pkg/proxy"
 	"github.com/CodisLabs/codis/pkg/utils"
 	"github.com/CodisLabs/codis/pkg/utils/bytesize"
 	"github.com/CodisLabs/codis/pkg/utils/log"
+	"encoding/json"
+	"io/ioutil"
 )
 
 var (
@@ -104,9 +104,43 @@ func main() {
 	}
 	fmt.Print(banner)
 
+	var redisConfigs[]proxy.RedisConfig
 	// set config file
 	if args["-c"] != nil {
 		configFile = args["-c"].(string)
+		f, err := os.Open(configFile)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+
+		// 读取配置文件
+		data, _ := ioutil.ReadAll(f)
+		err = json.Unmarshal(data, &redisConfigs)
+		if err != nil {
+			fmt.Printf("Error:%v\n", err)
+			os.Exit(1)
+		}
+
+		// 验证配置文件OK
+		if len(redisConfigs) == 0 {
+			fmt.Printf("Error: Invalid Configuration\n")
+			os.Exit(1)
+		}
+		for i := 0; i < len(redisConfigs); i++ {
+			if len(redisConfigs[i].Master) == 0 {
+				fmt.Printf("Error: Invalid Configuration\n")
+				os.Exit(1)
+			}
+			if len(redisConfigs[i].Slaves) > 1 {
+				fmt.Printf("Error: Invalid Configuration\n")
+				os.Exit(1)
+			}
+		}
+
+	} else {
+		fmt.Printf("Error: Invalid Configuration\n")
+		os.Exit(1)
 	}
 
 	var maxFileFrag = 10000000
@@ -145,38 +179,37 @@ func main() {
 		}
 	}
 
-	// set addr
-	if args["--addr"] != nil {
-		addr = args["--addr"].(string)
-	}
-
-	// set http addr
-	if args["--http-addr"] != nil {
-		httpAddr = args["--http-addr"].(string)
-	}
-
 	checkUlimit(1024)
 	runtime.GOMAXPROCS(cpus)
 
-	http.HandleFunc("/setloglevel", handleSetLogLevel)
-	go func() {
-		err := http.ListenAndServe(httpAddr, nil)
-		log.PanicError(err, "http debug server quit")
-	}()
-	log.Info("running on ", addr)
+	//http.HandleFunc("/setloglevel", handleSetLogLevel)
+	//go func() {
+	//	err := http.ListenAndServe(httpAddr, nil)
+	//	log.PanicError(err, "http debug server quit")
+	//}()
+	//log.Info("running on ", addr)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, os.Kill)
 
-	s := proxy.New(addr, "", httpAddr)
-	defer s.Close()
+	var servers[]*proxy.Server
+	for i := 0; i < len(redisConfigs); i++ {
+		s := proxy.New(&redisConfigs[i])
+		servers = append(servers, s)
+	}
 
+	// 强制关闭所有的Server
 	go func() {
 		<-c
 		log.Info("ctrl-c or SIGTERM found, bye bye...")
-		s.Close()
+		for i := 0; i < len(servers); i++ {
+			servers[i].Close()
+		}
 	}()
 
-	s.Join()
+	for i := 0; i < len(servers); i++ {
+		servers[i].Join()
+	}
+
 	log.Infof("proxy exit!! :(")
 }

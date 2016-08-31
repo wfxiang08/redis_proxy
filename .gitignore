@@ -6,7 +6,7 @@
 *.log.*
 
 main
-
+proxy
 martini_log
 .htaccess
 
