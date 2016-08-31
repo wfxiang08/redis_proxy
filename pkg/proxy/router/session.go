@@ -204,19 +204,6 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 	}
 
 
-	//switch opstr {
-	//case "SELECT":
-	//	return s.handleSelect(r)
-	//case "PING":
-	//	return s.handlePing(r)
-	//case "MGET":
-	//	return s.handleRequestMGet(r, d)
-	//case "MSET":
-	//	return s.handleRequestMSet(r, d)
-	//case "DEL":
-	//	return s.handleRequestMDel(r, d)
-	//}
-
 
 	// 普通的请求交给Dispatch
 	// 设计:
@@ -248,6 +235,7 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 		}
 	default:
 		if IsReadOnlyCommand(opstr) {
+			//log.Infof("Opstr: %s, is Readonly", opstr)
 			if s.backendR != nil {
 				// 通过只读的backendR来读取数据
 				s.backendR.PushBack(r)
@@ -256,6 +244,7 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 				s.backendWs[0].PushBack(r)
 			}
 		} else {
+			//log.Infof("Opstr: %s, is not Readonly", opstr)
 			var r1*Request
 			// 多次写入数据
 			for i := 0; i < len(s.backendWs); i++ {

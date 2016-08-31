@@ -99,7 +99,7 @@ func (bc *BackendConn) loopWriter() error {
 		for ok {
 			var flush = len(bc.input) == 0
 			if bc.canForward(r) {
-				//
+				// 将Request发送到Backend
 				if err := p.Encode(r.Resp, flush); err != nil {
 					return bc.setResponse(r, nil, err)
 				}
@@ -175,6 +175,7 @@ type FlushPolicy struct {
 }
 
 func (p *FlushPolicy) needFlush() bool {
+	// 这里的Backend没有复用，因此每一个请求都需要立马flush
 	return p.nbuffered != 0
 }
 

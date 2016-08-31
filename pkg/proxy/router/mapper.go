@@ -35,6 +35,7 @@ func init() {
 		"zscore", "hgetall", "sismember",
 	} {
 		readOnlyCommands[s] = true
+		readOnlyCommands[strings.ToUpper(s)] = true
 	}
 }
 
