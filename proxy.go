@@ -4,7 +4,7 @@
 package main
 
 import (
-	"encoding/json"
+
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -15,12 +15,10 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
+
 
 	"github.com/docopt/docopt-go"
-	"github.com/ngaut/gostats"
 	"github.com/CodisLabs/codis/pkg/proxy"
-	"github.com/CodisLabs/codis/pkg/proxy/router"
 	"github.com/CodisLabs/codis/pkg/utils"
 	"github.com/CodisLabs/codis/pkg/utils/bytesize"
 	"github.com/CodisLabs/codis/pkg/utils/log"
@@ -178,7 +176,7 @@ func main() {
 		log.Info("ctrl-c or SIGTERM found, bye bye...")
 		s.Close()
 	}()
-	
+
 	s.Join()
 	log.Infof("proxy exit!! :(")
 }

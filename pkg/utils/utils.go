@@ -4,13 +4,10 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/c4pt0r/cfg"
-	"github.com/wandoulabs/zkhelper"
-
 	"github.com/CodisLabs/codis/pkg/utils/errors"
 	"github.com/CodisLabs/codis/pkg/utils/log"
 )
@@ -26,11 +23,6 @@ func InitConfig() (*cfg.Cfg, error) {
 	} else {
 		return ret, nil
 	}
-}
-
-func GetZkLock(zkConn zkhelper.Conn, productName string) zkhelper.ZLocker {
-	zkPath := fmt.Sprintf("/zk/codis/db_%s/LOCK", productName)
-	return zkhelper.CreateMutex(zkConn, zkPath)
 }
 
 func GetExecutorPath() string {
