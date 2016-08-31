@@ -10,24 +10,20 @@ import (
 	"github.com/CodisLabs/codis/pkg/utils/atomic2"
 )
 
-type Dispatcher interface {
-	Dispatch(r *Request, opstr string) error
-}
-
 type Request struct {
-	OpStr string
-	Start int64
+	OpStr    string
+	Start    int64
 
-	Resp *redis.Resp
+	Resp     *redis.Resp
 
 	Coalesce func() error
 	Response struct {
-		Resp *redis.Resp
-		Err  error
-	}
+				 Resp *redis.Resp
+				 Err  error
+			 }
 
-	Wait *sync.WaitGroup
-	slot *sync.WaitGroup
+	Wait     *sync.WaitGroup
+	slot     *sync.WaitGroup
 
-	Failed *atomic2.Bool
+	Failed   *atomic2.Bool
 }

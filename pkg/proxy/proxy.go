@@ -5,42 +5,25 @@ package proxy
 
 import (
 	"net"
-	"os"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/CodisLabs/codis/pkg/models"
 	"github.com/CodisLabs/codis/pkg/proxy/router"
 	"github.com/CodisLabs/codis/pkg/utils/log"
 )
 
 type Server struct {
-	info          models.ProxyInfo
-	groups        map[int]int
+	listener net.Listener
 
-	lastActionSeq int
-
-	evtbus        chan interface{}
-	listener      net.Listener
-
-	kill          chan interface{}
-	wait          sync.WaitGroup
-	stop          sync.Once
+	kill     chan interface{}
+	wait     sync.WaitGroup
+	stop     sync.Once
 }
 
 func New(addr string, passwd, debugVarAddr string) *Server {
 
-	proxyHost := strings.Split(addr, ":")[0]
-
-	s := &Server{lastActionSeq: -1, groups: make(map[int]int)}
-	s.info.State = models.PROXY_STATE_OFFLINE
-	s.info.Addr = proxyHost + ":" + strings.Split(addr, ":")[1]
-	s.info.Pid = os.Getpid()
-	s.info.StartAt = time.Now().String()
+	s := &Server{}
 	s.kill = make(chan interface{})
-
-	log.Infof("proxy info = %+v", s.info)
 
 	if l, err := net.Listen("tcp", addr); err != nil {
 		log.PanicErrorf(err, "open listener failed")
