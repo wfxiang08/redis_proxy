@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/CodisLabs/codis/pkg/utils/assert"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/assert"
 )
 
 func TestBtoi(t *testing.T) {

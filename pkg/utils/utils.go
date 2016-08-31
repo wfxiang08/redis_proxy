@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/c4pt0r/cfg"
-	"github.com/CodisLabs/codis/pkg/utils/errors"
-	"github.com/CodisLabs/codis/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
 )
 
 func InitConfig() (*cfg.Cfg, error) {

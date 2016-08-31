@@ -16,10 +16,10 @@ import (
 	"syscall"
 
 	"github.com/docopt/docopt-go"
-	"github.com/CodisLabs/codis/pkg/proxy"
-	"github.com/CodisLabs/codis/pkg/utils"
-	"github.com/CodisLabs/codis/pkg/utils/bytesize"
-	"github.com/CodisLabs/codis/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/bytesize"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
 	"encoding/json"
 	"io/ioutil"
 )

@@ -10,7 +10,7 @@ import (
 	"path"
 	"sync"
 
-	"github.com/CodisLabs/codis/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
 )
 
 type rollingFile struct {

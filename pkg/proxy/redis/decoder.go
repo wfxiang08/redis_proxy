@@ -9,7 +9,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/CodisLabs/codis/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
 )
 
 var (

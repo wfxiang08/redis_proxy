@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CodisLabs/codis/pkg/utils/errors"
-	"github.com/CodisLabs/codis/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
 )
 
 const (

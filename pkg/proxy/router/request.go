@@ -6,8 +6,8 @@ package router
 import (
 	"sync"
 
-	"github.com/CodisLabs/codis/pkg/proxy/redis"
-	"github.com/CodisLabs/codis/pkg/utils/atomic2"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy/redis"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/atomic2"
 )
 
 type Request struct {

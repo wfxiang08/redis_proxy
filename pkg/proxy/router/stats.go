@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/CodisLabs/codis/pkg/utils/atomic2"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/atomic2"
 )
 
 type OpStats struct {

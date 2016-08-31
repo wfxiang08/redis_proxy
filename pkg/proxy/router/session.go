@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/CodisLabs/codis/pkg/proxy/redis"
-	"github.com/CodisLabs/codis/pkg/utils/atomic2"
-	"github.com/CodisLabs/codis/pkg/utils/errors"
-	"github.com/CodisLabs/codis/pkg/utils/log"
-	"github.com/CodisLabs/codis/pkg/proxy"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy/redis"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/atomic2"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy"
 )
 
 type Session struct {

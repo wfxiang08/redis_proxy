@@ -12,8 +12,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/CodisLabs/codis/pkg/utils/errors"
-	"github.com/CodisLabs/codis/pkg/utils/trace"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/trace"
 )
 
 const (

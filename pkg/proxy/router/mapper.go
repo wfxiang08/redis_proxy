@@ -6,8 +6,8 @@ package router
 import (
 	"strings"
 
-	"github.com/CodisLabs/codis/pkg/proxy/redis"
-	"github.com/CodisLabs/codis/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy/redis"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
 )
 
 var charmap [128]byte

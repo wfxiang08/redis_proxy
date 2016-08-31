@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/CodisLabs/codis/pkg/proxy/router"
-	"github.com/CodisLabs/codis/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy/router"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
 )
 
 type Server struct {

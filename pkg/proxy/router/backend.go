@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/CodisLabs/codis/pkg/proxy/redis"
-	"github.com/CodisLabs/codis/pkg/utils/errors"
-	"github.com/CodisLabs/codis/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy/redis"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
 )
 
 type BackendConn struct {

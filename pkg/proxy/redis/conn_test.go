@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CodisLabs/codis/pkg/utils/assert"
-	"github.com/CodisLabs/codis/pkg/utils/atomic2"
-	"github.com/CodisLabs/codis/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/assert"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/atomic2"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
 )
 
 func newConnPair() (*Conn, *Conn) {

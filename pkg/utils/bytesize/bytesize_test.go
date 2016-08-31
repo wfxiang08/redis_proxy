@@ -6,9 +6,9 @@ package bytesize_test
 import (
 	"testing"
 
-	"github.com/CodisLabs/codis/pkg/utils/assert"
-	. "github.com/CodisLabs/codis/pkg/utils/bytesize"
-	"github.com/CodisLabs/codis/pkg/utils/errors"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/assert"
+	. "git.chunyu.me/infra/redis_proxy/pkg/utils/bytesize"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
 )
 
 func TestBytesize(t *testing.T) {
