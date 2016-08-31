@@ -13,7 +13,7 @@ import (
 )
 
 type Server struct {
-	redisConfig *RedisConfig
+	redisConfig *router.RedisConfig
 	listener    net.Listener
 
 	kill        chan interface{}
@@ -21,7 +21,7 @@ type Server struct {
 	stop        sync.Once
 }
 
-func New(redisConfig *RedisConfig) *Server {
+func New(redisConfig *router.RedisConfig) *Server {
 
 	s := &Server{redisConfig:redisConfig}
 	s.kill = make(chan interface{})

@@ -13,7 +13,6 @@ import (
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/atomic2"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
-	"git.chunyu.me/infra/redis_proxy/pkg/proxy"
 )
 
 type Session struct {
@@ -30,7 +29,7 @@ type Session struct {
 	quit        bool
 	failed      atomic2.Bool
 
-	redisConfig *proxy.RedisConfig
+	redisConfig *RedisConfig
 
 	// 如果存在多个Master, 则第一个为主要的Master, 其他的为异步双写接口
 	backendWs   []*BackendConn
@@ -52,11 +51,11 @@ func (s *Session) String() string {
 	return string(b)
 }
 
-func NewSession(c net.Conn, redisConfig*proxy.RedisConfig) *Session {
+func NewSession(c net.Conn, redisConfig *RedisConfig) *Session {
 	return NewSessionSize(c, redisConfig, 1024 * 32, 1800)
 }
 
-func NewSessionSize(c net.Conn, redisConfig*proxy.RedisConfig, bufsize int, timeout int) *Session {
+func NewSessionSize(c net.Conn, redisConfig *RedisConfig, bufsize int, timeout int) *Session {
 	s := &Session{CreateUnix: time.Now().Unix(), redisConfig: redisConfig}
 
 	s.Conn = redis.NewConnSize(c, bufsize)
@@ -64,11 +63,11 @@ func NewSessionSize(c net.Conn, redisConfig*proxy.RedisConfig, bufsize int, time
 	s.Conn.WriterTimeout = time.Second * 30
 	log.Infof("session [%p] create: %s", s, s)
 
-	for i := 0; i < redisConfig.Master; i++ {
-		s.backendWs = append(s.backendWs, NewBackendConn(redisConfig.Master[i].Host, redisConfig.Master[i].Port))
+	for i := 0; i < len(redisConfig.Master); i++ {
+		s.backendWs = append(s.backendWs, NewBackendConn(redisConfig.Master[i]))
 	}
 	if len(redisConfig.Slaves) == 1 {
-		s.backendR = NewBackendConn(redisConfig.Slaves[0].Host, redisConfig.Slaves[0].Port)
+		s.backendR = NewBackendConn(redisConfig.Slaves[0])
 	}
 
 	return s

@@ -22,13 +22,11 @@ import (
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
 	"encoding/json"
 	"io/ioutil"
+	"git.chunyu.me/infra/redis_proxy/pkg/proxy/router"
 )
 
 var (
 	cpus = 2
-	addr = ":9000"
-	httpAddr = ":9001"
-	configFile = "config.ini"
 )
 
 var usage = `usage: proxy [-c <config_file>] [-L <log_file>] [--log-level=<loglevel>] [--log-filesize=<filesize>] [--cpu=<cpu_num>] [--addr=<proxy_listen_addr>] [--http-addr=<debug_http_server_addr>]
@@ -104,10 +102,10 @@ func main() {
 	}
 	fmt.Print(banner)
 
-	var redisConfigs[]proxy.RedisConfig
+	var redisConfigs[]router.RedisConfig
 	// set config file
 	if args["-c"] != nil {
-		configFile = args["-c"].(string)
+		configFile := args["-c"].(string)
 		f, err := os.Open(configFile)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
