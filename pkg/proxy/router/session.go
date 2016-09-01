@@ -12,7 +12,7 @@ import (
 	"git.chunyu.me/infra/redis_proxy/pkg/proxy/redis"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/atomic2"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
-	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
+	log "git.chunyu.me/infra/redis_proxy/pkg/utils/rolling_log"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils"
 )
 

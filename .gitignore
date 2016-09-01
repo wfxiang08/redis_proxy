@@ -6,8 +6,7 @@
 *.log.*
 
 redis.json
-main
-proxy
+redis_proxy
 martini_log
 .htaccess
 

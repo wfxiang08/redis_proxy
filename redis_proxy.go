@@ -18,8 +18,7 @@ import (
 	"github.com/docopt/docopt-go"
 	"git.chunyu.me/infra/redis_proxy/pkg/proxy"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils"
-	"git.chunyu.me/infra/redis_proxy/pkg/utils/bytesize"
-	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
+	log "git.chunyu.me/infra/redis_proxy/pkg/utils/rolling_log"
 	"encoding/json"
 	"io/ioutil"
 	"git.chunyu.me/infra/redis_proxy/pkg/proxy/router"
@@ -30,15 +29,13 @@ var (
 )
 
 // http://127.0.0.1:8080/debug/pprof/
-var usage = `usage: proxy [-c <config_file>] [-L <log_file>] [--log-level=<loglevel>] [--log-filesize=<filesize>] [--cpu=<cpu_num>] [--addr=<proxy_listen_addr>] [--http-addr=<debug_http_server_addr>]
+var usage = `usage: proxy [-c <config_file>] [-L <log_file>] [--log-keep-days=<maxdays>]  [--log-level=<loglevel>] [--log-filesize=<filesize>] [--profile-addr=<profile-addr>]
 
 options:
    -c	set config file
    -L	set output log file, default is stdout
    --log-level=<loglevel>	set log level: info, warn, error, debug [default: info]
-   --log-filesize=<maxsize>  set max log file size, suffixes "KB", "MB", "GB" are allowed, 1KB=1024 bytes, etc. Default is 1GB.
-   --cpu=<cpu_num>		num of cpu cores that proxy can use
-   --addr=<proxy_listen_addr>		proxy listen address, example: 0.0.0.0:9000
+   --log-keep-days=<maxdays>  set max log file keep days, default is 3 days
    --profile-addr=<profile_http_server_addr>		profile http server
 `
 
@@ -138,19 +135,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	var maxFileFrag = 10000000
-	var maxFragSize int64 = bytesize.GB * 1
-	if s, ok := args["--log-filesize"].(string); ok && s != "" {
-		v, err := bytesize.Parse(s)
+	var maxKeepDays int = 3
+	if s, ok := args["--log-keep-days"].(string); ok && s != "" {
+		v, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
-			log.PanicErrorf(err, "invalid max log file size = %s", s)
+			log.PanicErrorf(err, "invalid max log file keep days = %s", s)
 		}
-		maxFragSize = v
+		maxKeepDays = int(v)
 	}
 
 	// set output log file
 	if s, ok := args["-L"].(string); ok && s != "" {
-		f, err := log.NewRollingFile(s, maxFileFrag, maxFragSize)
+		f, err := log.NewRollingFile(s, maxKeepDays)
 		if err != nil {
 			log.PanicErrorf(err, "open rolling log file failed: %s", s)
 		} else {
@@ -165,15 +161,8 @@ func main() {
 	if s, ok := args["--log-level"].(string); ok && s != "" {
 		setLogLevel(s)
 	}
-	cpus = runtime.NumCPU()
-	// set cpu
-	if args["--cpu"] != nil {
-		cpus, err = strconv.Atoi(args["--cpu"].(string))
-		if err != nil {
-			log.PanicErrorf(err, "parse cpu number failed")
-		}
-	}
 
+	cpus = runtime.NumCPU()
 	checkUlimit(1024)
 	runtime.GOMAXPROCS(cpus)
 

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"git.chunyu.me/infra/redis_proxy/pkg/proxy/router"
-	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
+	log "git.chunyu.me/infra/redis_proxy/pkg/utils/rolling_log"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils"
 )
 
