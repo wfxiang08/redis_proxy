@@ -156,17 +156,14 @@ func (s *Session) loopReader(tasks chan <- *Request) error {
 }
 
 func (s *Session) loopWriter(tasks <-chan *Request) error {
-	p := &FlushPolicy{
-		Encoder:     s.Writer,
-		MaxBuffered: 32,
-		MaxInterval: 300,
-	}
 	for r := range tasks {
 		resp, err := s.handleResponse(r)
 		if err != nil {
 			return err
 		}
-		if err := p.Encode(resp, len(tasks) == 0); err != nil {
+
+		// 直接写出去，并且Flush
+		if err := s.Writer.Encode(resp, true); err != nil {
 			return err
 		}
 	}

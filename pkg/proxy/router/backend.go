@@ -91,23 +91,15 @@ func (bc *BackendConn) loopWriter() error {
 		}
 		defer close(tasks)
 
-		p := &FlushPolicy{
-			Encoder:     c.Writer,
-			MaxBuffered: 64,
-			MaxInterval: 300,
-		}
 		for ok {
-			var flush = len(bc.input) == 0
 			if bc.canForward(r) {
-				// 将Request发送到Backend
-				if err := p.Encode(r.Resp, flush); err != nil {
+				// 每次都直接Flush
+				if err := c.Writer.Encode(r.Resp, true); err != nil {
 					return bc.setResponse(r, nil, err)
 				}
+
 				tasks <- r
 			} else {
-				if err := p.Flush(flush); err != nil {
-					return bc.setResponse(r, nil, err)
-				}
 				bc.setResponse(r, nil, ErrFailedRequest)
 			}
 
@@ -162,39 +154,4 @@ func (bc *BackendConn) setResponse(r *Request, resp *redis.Resp, err error) erro
 		r.slot.Done()
 	}
 	return err
-}
-
-type FlushPolicy struct {
-	*redis.Encoder
-
-	MaxBuffered int
-	MaxInterval int64
-
-	nbuffered   int
-	lastflush   int64
-}
-
-func (p *FlushPolicy) needFlush() bool {
-	// 这里的Backend没有复用，因此每一个请求都需要立马flush
-	return p.nbuffered != 0
-}
-
-func (p *FlushPolicy) Flush(force bool) error {
-	if force || p.needFlush() {
-		if err := p.Encoder.Flush(); err != nil {
-			return err
-		}
-		p.nbuffered = 0
-		p.lastflush = microseconds()
-	}
-	return nil
-}
-
-func (p *FlushPolicy) Encode(resp *redis.Resp, force bool) error {
-	if err := p.Encoder.Encode(resp, false); err != nil {
-		return err
-	} else {
-		p.nbuffered++
-		return p.Flush(force)
-	}
 }

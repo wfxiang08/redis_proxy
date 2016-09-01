@@ -40,6 +40,7 @@ function start() {
         echo "Config file $conf doesn't exist, creating one."
 		exit -1
     fi
+    --profile-addr=123.59.153.235:7171
     
     nohup $app -c $conf -L $logfile --profile-addr=127.0.0.1:7171 &> $stdfile &
     echo $! > $pidfile
