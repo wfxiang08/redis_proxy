@@ -175,6 +175,10 @@ var ErrRespIsRequired = errors.New("resp is required")
 func (s *Session) handleResponse(r *Request) (*redis.Resp, error) {
 	// 读写如何同步状态呢?
 	r.Wait.Wait()
+
+	log.Debugf("Op: %s, Elapsed: %s micro.", r.OpStr, microseconds() - r.Start)
+
+
 	if r.Coalesce != nil {
 		if err := r.Coalesce(); err != nil {
 			return nil, err
