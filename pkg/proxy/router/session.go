@@ -249,19 +249,22 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 		// 同时SELECT所有的服务器
 		// 同时ping所有的服务器
 		var r1*Request
-		r.Wait.Done() // Auth等命令就不等待，直接异步发送请求
+		if s.backendR != nil {
+			s.backendR.PushBack(r)
+			r1 = CloneRequest(r)
+		}
+
 		for i := 0; i < len(s.backendWs); i++ {
-			if i != 0 {
+			// 如果存在: backendR, 则其他的请求都是异步发送
+			if r1 != nil {
 				r1 = CloneRequest(r)
-			} else {
+			} else if i == 0 {
+				// 否则: 第一个backendWs同步同步发送
 				r1 = r
 			}
 			s.backendWs[i].PushBack(r1)
 		}
-		if s.backendR != nil {
-			r1 = CloneRequest(r)
-			s.backendR.PushBack(r1)
-		}
+
 	default:
 		if IsReadOnlyCommand(opstr) {
 			//log.Infof("Opstr: %s, is Readonly", opstr)
