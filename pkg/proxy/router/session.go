@@ -63,7 +63,7 @@ func NewSessionSize(c net.Conn, redisConfig *RedisConfig, bufsize int, timeout i
 	s.Conn = redis.NewConnSize(c, bufsize)
 	s.Conn.ReaderTimeout = time.Second * time.Duration(timeout)
 	s.Conn.WriterTimeout = time.Second * 30
-	log.Infof("session [%p] create: %s", s, s)
+	log.Printf("session [%p] create: %s", s, s)
 
 	// 创建到各个backend Write的连接
 	for i := 0; i < len(redisConfig.Master); i++ {
@@ -86,7 +86,7 @@ func (s *Session) Close() error {
 	s.stop.Do(func() {
 		if s.backendWs != nil {
 			for i := 0; i < len(s.backendWs); i++ {
-				log.Infof(utils.Red("Close Backend: %s"), s.backendWs[i].addr)
+				log.Printf(utils.Red("Close Backend: %s"), s.backendWs[i].addr)
 				s.backendWs[i].Close()
 			}
 			s.backendWs = nil
@@ -104,9 +104,9 @@ func (s *Session) Serve(maxPipeline int) {
 	var errlist errors.ErrorList
 	defer func() {
 		if err := errlist.First(); err != nil {
-			log.Infof("session [%p] closed: %s, error = %s", s, s, err)
+			log.Printf("session [%p] closed: %s, error = %s", s, s, err)
 		} else {
-			log.Infof("session [%p] closed: %s, quit", s, s)
+			log.Printf("session [%p] closed: %s, quit", s, s)
 		}
 		s.Close()
 	}()

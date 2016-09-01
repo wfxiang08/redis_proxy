@@ -4,6 +4,7 @@ import (
 	color "github.com/fatih/color"
 )
 
+
 // 警告信息采用红色显示
 var Red = color.New(color.FgRed).SprintFunc()
 

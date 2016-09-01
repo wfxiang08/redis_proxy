@@ -51,7 +51,7 @@ func New(redisConfig *router.RedisConfig) *Server {
 func (s *Server) serve() {
 	defer s.close()
 
-	log.Infof(utils.Green("proxy is serving at: %v"), s.redisConfig.Listen)
+	log.Printf(utils.Green("proxy is serving at: %v"), s.redisConfig.Listen)
 	s.handleConns()
 }
 

@@ -38,7 +38,7 @@ function start() {
         echo "Config file $conf doesn't exist, creating one."
 		exit -1
     fi
-    
+    echo "$app -c $conf -L $logfile &> $stdfile"
     nohup $app -c $conf -L $logfile &> $stdfile &
     echo $! > $pidfile
     echo "$app started..., pid=$!"

@@ -154,6 +154,7 @@ func main() {
 			log.StdLog = log.New(f, "")
 		}
 	}
+
 	log.SetLevel(log.LEVEL_INFO)
 	log.SetFlags(log.Flags() | log.Lshortfile)
 
