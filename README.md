@@ -2,7 +2,7 @@
 ## 功能
 * 使用方式
 ```bash
-./proxy -c redis.json
+./redis_proxy -c redis.json
 ```
 
 * 特性:
@@ -42,8 +42,10 @@
 	* proxy在读数据的时候，会从slave0读取
 	* proxy在写数据的时候，会同时写入 master0, master1
 * 使用场景
-	* 读写分离
+	* `读写分离`
 		* 从master写入，从slave读取
 		* 例如: redis的master在天津， slave在ucloud， 这样可以维持天津redis的一致性, slave的redis会稍微有一点延迟
-    * 双写
+    * `双写`
 	    * 在写入ucloud机器时，会同时写一份到天津机房，保证天津机房的数据的一致性（便于回滚)
+
+
