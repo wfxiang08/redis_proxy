@@ -49,7 +49,7 @@ func New(redisConfig *router.RedisConfig) *Server {
 func (s *Server) serve() {
 	defer s.close()
 
-	log.Info("proxy is serving")
+	log.Infof("proxy is serving at: %v", s.redisConfig.Listen)
 	s.handleConns()
 }
 
@@ -60,7 +60,6 @@ func (s *Server) serve() {
 func (s *Server) handleConns() {
 	ch := make(chan net.Conn, 4096)
 	defer close(ch)
-
 
 	maxPipeline := 10
 

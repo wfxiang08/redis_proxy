@@ -29,6 +29,7 @@ var (
 	cpus = 2
 )
 
+// http://127.0.0.1:8080/debug/pprof/
 var usage = `usage: proxy [-c <config_file>] [-L <log_file>] [--log-level=<loglevel>] [--log-filesize=<filesize>] [--cpu=<cpu_num>] [--addr=<proxy_listen_addr>] [--http-addr=<debug_http_server_addr>]
 
 options:
@@ -38,10 +39,7 @@ options:
    --log-filesize=<maxsize>  set max log file size, suffixes "KB", "MB", "GB" are allowed, 1KB=1024 bytes, etc. Default is 1GB.
    --cpu=<cpu_num>		num of cpu cores that proxy can use
    --addr=<proxy_listen_addr>		proxy listen address, example: 0.0.0.0:9000
-   --http-addr=<debug_http_server_addr>		debug vars http server
-`
-
-const banner string = `
+   --profile-addr=<profile_http_server_addr>		profile http server
 `
 
 func init() {
@@ -100,7 +98,6 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Print(banner)
 
 	var redisConfigs[]router.RedisConfig
 	// set config file
@@ -180,12 +177,14 @@ func main() {
 	checkUlimit(1024)
 	runtime.GOMAXPROCS(cpus)
 
-	//http.HandleFunc("/setloglevel", handleSetLogLevel)
-	//go func() {
-	//	err := http.ListenAndServe(httpAddr, nil)
-	//	log.PanicError(err, "http debug server quit")
-	//}()
-	//log.Info("running on ", addr)
+
+	// 这就是为什么 Codis 傻乎乎起一个 http server的目的
+	if s, ok := args["--profile-addr"].(string); ok && len(s) > 0 {
+		go func() {
+			log.Printf(utils.Red("Profile Address: %s"), s)
+			log.Println(http.ListenAndServe(s, nil))
+		}()
+	}
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, os.Kill)

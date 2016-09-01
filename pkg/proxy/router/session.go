@@ -76,7 +76,20 @@ func NewSessionSize(c net.Conn, redisConfig *RedisConfig, bufsize int, timeout i
 }
 
 func (s *Session) Close() error {
-	return s.Conn.Close()
+	err := s.Conn.Close()
+
+
+	for i := 0; i < len(s.backendWs); i++ {
+		s.backendWs[i].Close()
+	}
+	s.backendWs = nil
+
+	if s.backendR != nil {
+		s.backendR.Close()
+		s.backendR = nil
+	}
+
+	return
 }
 
 func (s *Session) Serve(maxPipeline int) {
@@ -101,6 +114,9 @@ func (s *Session) Serve(maxPipeline int) {
 		if err := s.loopWriter(tasks); err != nil {
 			errlist.PushBack(err)
 		}
+
+		// 关闭Session
+		// 关闭所有的后端连接
 		s.Close()
 	}()
 
