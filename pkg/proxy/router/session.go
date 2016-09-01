@@ -32,6 +32,7 @@ type Session struct {
 
 	redisConfig *RedisConfig
 
+	stop        sync.Once
 	// 如果存在多个Master, 则第一个为主要的Master, 其他的为异步双写接口
 	backendWs   []*BackendConn
 	// 如果指定了Slave, 则从slave读取数据
@@ -81,16 +82,20 @@ func (s *Session) Close() error {
 
 	// Sleep 1s, 保证后端的事情处理完毕
 	time.Sleep(time.Second * 1)
-	for i := 0; i < len(s.backendWs); i++ {
-		log.Infof(utils.Red("Close Backend: %s"), s.backendWs[i].addr)
-		s.backendWs[i].Close()
-	}
-	s.backendWs = nil
 
-	if s.backendR != nil {
-		s.backendR.Close()
-		s.backendR = nil
-	}
+	s.stop.Do(func() {
+		if s.backendWs != nil {
+			for i := 0; i < len(s.backendWs); i++ {
+				log.Infof(utils.Red("Close Backend: %s"), s.backendWs[i].addr)
+				s.backendWs[i].Close()
+			}
+			s.backendWs = nil
+		}
+		if s.backendR != nil {
+			s.backendR.Close()
+			s.backendR = nil
+		}
+	})
 
 	return err
 }
