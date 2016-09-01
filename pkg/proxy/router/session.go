@@ -249,6 +249,7 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 		// 同时SELECT所有的服务器
 		// 同时ping所有的服务器
 		var r1*Request
+		r.Wait.Done() // Auth等命令就不等待，直接异步发送请求
 		for i := 0; i < len(s.backendWs); i++ {
 			if i != 0 {
 				r1 = CloneRequest(r)

@@ -150,8 +150,5 @@ func (bc *BackendConn) setResponse(r *Request, resp *redis.Resp, err error) erro
 	if r.Wait != nil {
 		r.Wait.Done()
 	}
-	if r.slot != nil {
-		r.slot.Done()
-	}
 	return err
 }

@@ -23,7 +23,5 @@ type Request struct {
 			 }
 
 	Wait     *sync.WaitGroup
-	slot     *sync.WaitGroup
-
 	Failed   *atomic2.Bool
 }
