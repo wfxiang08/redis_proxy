@@ -266,9 +266,12 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 			//log.Infof("Opstr: %s, is Readonly", opstr)
 			if s.backendR != nil {
 				// 通过只读的backendR来读取数据
+
+				log.Debugf("Use Slave Redis: %s for: %s", s.backendR.addr, opstr)
 				s.backendR.PushBack(r)
 			} else {
 				// 同构Ws[0]来读取数据
+				log.Debugf("Use Master Redis: %s for: %s", s.backendWs[0].addr, opstr)
 				s.backendWs[0].PushBack(r)
 			}
 		} else {
@@ -281,6 +284,8 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 				} else {
 					r1 = r
 				}
+
+				log.Debugf("Use Master Redis: %s for: %s", s.backendWs[i].addr, opstr)
 				s.backendWs[i].PushBack(r1)
 			}
 		}

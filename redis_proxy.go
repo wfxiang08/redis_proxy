@@ -170,6 +170,7 @@ func main() {
 
 	// 这就是为什么 Codis 傻乎乎起一个 http server的目的
 	if s, ok := args["--profile-addr"].(string); ok && len(s) > 0 {
+		http.HandleFunc("/setloglevel", handleSetLogLevel)
 		go func() {
 			log.Printf(utils.Red("Profile Address: %s"), s)
 			log.Println(http.ListenAndServe(s, nil))
