@@ -13,6 +13,7 @@ import (
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/atomic2"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils"
 )
 
 type Session struct {
@@ -78,8 +79,10 @@ func NewSessionSize(c net.Conn, redisConfig *RedisConfig, bufsize int, timeout i
 func (s *Session) Close() error {
 	err := s.Conn.Close()
 
-
+	// Sleep 1s, 保证后端的事情处理完毕
+	time.Sleep(time.Second * 1)
 	for i := 0; i < len(s.backendWs); i++ {
+		log.Infof(utils.Red("Close Backend: %s"), s.backendWs[i].addr)
 		s.backendWs[i].Close()
 	}
 	s.backendWs = nil
@@ -89,7 +92,7 @@ func (s *Session) Close() error {
 		s.backendR = nil
 	}
 
-	return
+	return err
 }
 
 func (s *Session) Serve(maxPipeline int) {

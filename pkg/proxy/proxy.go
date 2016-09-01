@@ -10,6 +10,7 @@ import (
 
 	"git.chunyu.me/infra/redis_proxy/pkg/proxy/router"
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/log"
+	"git.chunyu.me/infra/redis_proxy/pkg/utils"
 )
 
 type Server struct {
@@ -27,7 +28,8 @@ func New(redisConfig *router.RedisConfig) *Server {
 	s.kill = make(chan interface{})
 
 	// 监听某个端口
-	if l, err := net.Listen("tcp", redisConfig.Listen); err != nil {
+	// 为了简单，直接使用tcp4协议
+	if l, err := net.Listen("tcp4", redisConfig.Listen); err != nil {
 		log.PanicErrorf(err, "open listener failed")
 	} else {
 		s.listener = l
@@ -49,7 +51,7 @@ func New(redisConfig *router.RedisConfig) *Server {
 func (s *Server) serve() {
 	defer s.close()
 
-	log.Infof("proxy is serving at: %v", s.redisConfig.Listen)
+	log.Infof(utils.Green("proxy is serving at: %v"), s.redisConfig.Listen)
 	s.handleConns()
 }
 
@@ -78,11 +80,11 @@ func (s *Server) handleConns() {
 		c, err := s.listener.Accept()
 		if err != nil {
 			if ne, ok := err.(net.Error); ok && ne.Temporary() {
-				log.WarnErrorf(err, "[%p] proxy accept new connection failed, get temporary error", s)
+				log.WarnErrorf(err, utils.Red("[%p] proxy accept new connection failed, get temporary error", s))
 				time.Sleep(time.Millisecond * 10)
 				continue
 			}
-			log.WarnErrorf(err, "[%p] proxy accept new connection failed, get non-temporary error, must shutdown", s)
+			log.WarnErrorf(err, utils.Red("[%p] proxy accept new connection failed, get non-temporary error, must shutdown"), s)
 			return
 		} else {
 			ch <- c
