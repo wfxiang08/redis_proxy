@@ -237,6 +237,10 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 	// 分配请求:
 	// 做请求分发
 	switch opstr {
+	// 如果指定SLAVE OF操作，则直接退出
+	case "SLAVEOF":
+		return s.handleQuit(r)
+
 	case "AUTH":
 		fallthrough
 	case "PING":
