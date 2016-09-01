@@ -176,8 +176,7 @@ func (s *Session) handleResponse(r *Request) (*redis.Resp, error) {
 	// 读写如何同步状态呢?
 	r.Wait.Wait()
 
-	log.Debugf("Op: %s, Elapsed: %s micro.", r.OpStr, microseconds() - r.Start)
-
+	log.Debugf("Op: %s, Elapsed: %.2f ms.", r.OpStr, (microseconds() - r.Start) / 1000)
 
 	if r.Coalesce != nil {
 		if err := r.Coalesce(); err != nil {
