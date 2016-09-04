@@ -218,7 +218,7 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 	r := &Request{
 		OpStr:  opstr,
 		Start:  usnow,
-		Resp:   resp,
+		Resp:   resp, // 请求数据
 		Wait:   &sync.WaitGroup{},
 		Failed: &s.failed,
 	}
@@ -249,6 +249,7 @@ func (s *Session) handleRequest(resp *redis.Resp) (*Request, error) {
 		// 同时SELECT所有的服务器
 		// 同时ping所有的服务器
 		var r1*Request
+
 		if s.backendR != nil {
 			s.backendR.PushBack(r)
 			r1 = CloneRequest(r)
