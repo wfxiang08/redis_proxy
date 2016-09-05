@@ -164,7 +164,7 @@ func main() {
 	}
 
 	cpus = runtime.NumCPU()
-	checkUlimit(10000)
+	checkUlimit(1024)
 	runtime.GOMAXPROCS(cpus)
 
 
