@@ -8,16 +8,17 @@ import (
 	"time"
 
 	"git.chunyu.me/infra/redis_proxy/pkg/utils/errors"
+	log "git.chunyu.me/infra/redis_proxy/pkg/utils/rolling_log"
 )
 
 type Conn struct {
-	Sock net.Conn
+	Sock          net.Conn
 
 	ReaderTimeout time.Duration
 	WriterTimeout time.Duration
 
-	Reader *Decoder
-	Writer *Encoder
+	Reader        *Decoder
+	Writer        *Encoder
 }
 
 func DialTimeout(addr string, bufsize int, timeout time.Duration) (*Conn, error) {
@@ -29,7 +30,7 @@ func DialTimeout(addr string, bufsize int, timeout time.Duration) (*Conn, error)
 }
 
 func NewConn(sock net.Conn) *Conn {
-	return NewConnSize(sock, 1024*64)
+	return NewConnSize(sock, 1024 * 64)
 }
 
 func NewConnSize(sock net.Conn, bufsize int) *Conn {
@@ -40,6 +41,7 @@ func NewConnSize(sock net.Conn, bufsize int) *Conn {
 }
 
 func (c *Conn) Close() error {
+	log.Infof("Close Socket Connection....")
 	return c.Sock.Close()
 }
 

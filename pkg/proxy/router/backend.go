@@ -83,6 +83,7 @@ func (bc *BackendConn) KeepAlive() bool {
 var ErrFailedRequest = errors.New("discard failed request")
 
 func (bc *BackendConn) loopWriter() error {
+	// 从: bc.input中读取数据
 	r, ok := <-bc.input
 	if ok {
 		c, tasks, err := bc.newBackendReader()
@@ -111,10 +112,13 @@ func (bc *BackendConn) loopWriter() error {
 
 // 创建一个到Backend的连接
 func (bc *BackendConn) newBackendReader() (*redis.Conn, chan <- *Request, error) {
-	c, err := redis.DialTimeout(bc.addr, 1024 * 512, time.Second)
+	c, err := redis.DialTimeout(bc.addr, 1024 * 512, time.Second * 2)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	log.Infof("Open Connnection To: %s", bc.addr)
+
 	c.ReaderTimeout = time.Minute
 	c.WriterTimeout = time.Minute
 

@@ -68,7 +68,7 @@ func (s *Server) handleConns() {
 	// 为每个请求建一个Session
 	go func() {
 		for c := range ch {
-			x := router.NewSessionSize(c, s.redisConfig, 1024 * 1024, 5000)
+			x := router.NewSessionSize(c, s.redisConfig, 1024 * 1024, 50)
 
 			// Session处理Redis的请求
 			go x.Serve(maxPipeline)

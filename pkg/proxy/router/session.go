@@ -63,7 +63,7 @@ func NewSessionSize(c net.Conn, redisConfig *RedisConfig, bufsize int, timeout i
 	s.Conn = redis.NewConnSize(c, bufsize)
 	s.Conn.ReaderTimeout = time.Second * time.Duration(timeout)
 	s.Conn.WriterTimeout = time.Second * 30
-	log.Printf("session [%p] create: %s", s, s)
+	log.Printf("session [%p] c: %s", s, s)
 
 	// 创建到各个backend Write的连接
 	for i := 0; i < len(redisConfig.Master); i++ {
@@ -92,6 +92,7 @@ func (s *Session) Close() error {
 			s.backendWs = nil
 		}
 		if s.backendR != nil {
+			log.Printf(utils.Red("Close Backend Read: %s"), s.backendR.addr)
 			s.backendR.Close()
 			s.backendR = nil
 		}
