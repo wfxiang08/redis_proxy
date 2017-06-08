@@ -1,0 +1,13 @@
+package: .
+import:
+- package: github.com/c4pt0r/cfg
+- package: github.com/fatih/color
+- package: github.com/garyburd/redigo
+  subpackages:
+  - redis
+- package: github.com/wfxiang08/cyutils
+  subpackages:
+  - utils/errors
+  - utils/rolling_log
+- package: github.com/docopt/docopt-go
+  version: 0.6.2

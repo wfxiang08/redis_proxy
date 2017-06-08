@@ -1,0 +1,31 @@
+hash: a30e2893e93e6fef0449a29a0c85d3d3b1d9919bb0fdaca2897939c48790290e
+updated: 2017-06-08T13:35:36.58850234+08:00
+imports:
+- name: github.com/c4pt0r/cfg
+  version: 429e6985f0b07bceaa33b57ee612fbca4797a9a6
+- name: github.com/docopt/docopt-go
+  version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/fatih/color
+  version: 34e4ee095d12986a2cef5ddb9aeb3b8cfcfea17c
+- name: github.com/garyburd/redigo
+  version: 8873b2f1995f59d4bcdd2b0dc9858e2cb9bf0c13
+  subpackages:
+  - internal
+  - redis
+- name: github.com/mattn/go-colorable
+  version: ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8
+- name: github.com/mattn/go-isatty
+  version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
+- name: github.com/wfxiang08/cyutils
+  version: dfb8bc2b5402cb534e3f53cbd9fc3897820f7b07
+  subpackages:
+  - utils/assert
+  - utils/atomic2
+  - utils/errors
+  - utils/rolling_log
+  - utils/trace
+- name: golang.org/x/sys
+  version: e24f485414aeafb646f6fca458b0bf869c0880a1
+  subpackages:
+  - unix
+testImports: []

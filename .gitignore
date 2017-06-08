@@ -10,7 +10,11 @@ redis_proxy
 martini_log
 .htaccess
 
-/bin
+vendor
+.idea
+/src/tool_*
+/src/task_*
+
 
 makefile
 
