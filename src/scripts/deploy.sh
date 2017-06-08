@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 ./build.sh
 mkdir -p /usr/local/redis_proxy/bin
 mkdir -p /usr/local/redis_proxy/log

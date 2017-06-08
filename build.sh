@@ -1,1 +1,0 @@
-go build redis_proxy.go
